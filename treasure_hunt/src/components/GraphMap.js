@@ -1,6 +1,9 @@
 import React, { Component } from 'react';
 import axios from 'axios';
 
+require('dotenv').config();
+const treasure_token = process.env.TREASURE_HUNT_TOKEN;
+
 class GraphMap extends Component {
     // local storage here, will hold the travel path of the player
     state = { travel: 0 };
