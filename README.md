@@ -1,3 +1,5 @@
+## Trello URL: https://trello.com/b/HGXlfJP9/lambdamud-evan-carlstrom
+
 # Lambda Treasure Hunt
 
 Welcome to the first annual Lambda Treasure Hunt!
