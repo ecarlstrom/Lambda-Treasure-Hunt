@@ -2,3 +2,4 @@ db.sqlite3
 .env
 Lambda-Treasure-Hunt.sublime-*
 *.pyc
+.node_modules
