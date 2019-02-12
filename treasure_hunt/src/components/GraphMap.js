@@ -19,6 +19,11 @@ class GraphMap extends Component {
         room_id: 0
     };
 
+    // adding componentDidMount to handle initialization, will find stored current location
+    componentDidMount() {
+        this.findLocation();
+    }
+    
     findLocation = async() => {
         try {
             const res = await axios({
