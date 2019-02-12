@@ -64,6 +64,24 @@ class GraphMap extends Component {
             });
             traversal[room_id].push(travel);
         }
+
+        // main loop logic, goes through the list of room IDs to push them to the proper place
+        const interval = setInterval(() => {
+            const unexplored = []; // array of unexplored rooms
+            const directions = traversal[room_id][1];
+            for (let direction in directions) {
+                if (directions[direction] === '?') {
+                    unexplored.push(direction);
+                }
+            }
+            if (unexplored) {
+                const travel = unexplored[0];
+                traversal.push(travel);
+                let previous_room = room_id;
+
+                // need to make a room-to-room movement function here
+            }
+        })
     }
 
 
