@@ -23,7 +23,8 @@ class GraphMap extends Component {
     componentDidMount() {
         this.findLocation();
     }
-    
+
+    // findLocation locates a player's current room on the map
     findLocation = async() => {
         try {
             const res = await axios({
@@ -37,11 +38,34 @@ class GraphMap extends Component {
         } catch(err) {
             console.error('An error was encountered. Please try again.');
         }
-    }
+    } // findLocation()
 
     handleClick = () => {
         this.findLocation();
     };
+
+    // mapTravel will allow the player to move across the map via a traversal algorithm
+    mapTravel = () => {
+        let { coords, exits, graph, path, room_id } = this.state;
+        const inverseDirections = { n: 's', s: 'n', w: 'e', e: 'w' }; // reversing direction for backtracking
+        this.setState({ generating: true }); // path is being generated, so generated is true
+
+        const traversal = {};
+        const path = [];
+
+        // initialiazing the first room, if there is no current room_id it is set when initialized
+        if (!graph[room_id]) {
+            traversal[room_id] = [];
+            traversal[room_id].push(coords);
+            
+            const travel = {};
+            exits.forEach(exit => {
+                travel[exit] = '?'; // represents unexplored exits
+            });
+            traversal[room_id].push(travel);
+        }
+    }
+
 
     render() {
         const { travel } = this.state;
