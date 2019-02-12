@@ -14,7 +14,7 @@ class GraphMap extends Component {
                 method: 'get',
                 url: 'https://lambda-treasure-hunt.herokuapp.com/api/adv/init',
                 headers: {
-                    Authorization: // link token here when .env setup is done
+                    Authorization: `Token ${treasure_token}` // link token here when .env setup is done
                 }
             });
             console.log(res.data);
@@ -31,8 +31,10 @@ class GraphMap extends Component {
         const { travel } = this.state;
         return (
             <div className = 'placeholder-div'>
-                <p>Progress bar (or whatever) placeholder</p>
-            </div>
+                <button className = 'button' onClick = {this.handleClick}>
+                Create Map
+                </button>
+            </div> // may add a progress bar as well to track map generation
         );
     }
 };
