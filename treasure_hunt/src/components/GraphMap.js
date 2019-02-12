@@ -51,7 +51,7 @@ class GraphMap extends Component {
         this.setState({ generating: true }); // path is being generated, so generated is true
 
         const traversal = {};
-        const path = [];
+        const traversalPath = [];
 
         // initialiazing the first room, if there is no current room_id it is set when initialized
         if (!graph[room_id]) {
@@ -76,7 +76,7 @@ class GraphMap extends Component {
             }
             if (unexplored) {
                 const travel = unexplored[0];
-                traversal.push(travel);
+                traversalPath.push(travel);
                 let previous_room = room_id;
 
                 // need to make a room-to-room movement function here

@@ -3,7 +3,7 @@ import { Route } from 'react-router-dom';
 import logo from './logo.svg';
 import './App.css';
 
-import GraphMap from './Components/GraphMap';
+import GraphMap from './components/GraphMap';
 
 class App extends Component {
   render() {
