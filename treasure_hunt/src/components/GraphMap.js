@@ -6,7 +6,18 @@ const treasure_token = process.env.TREASURE_HUNT_TOKEN;
 
 class GraphMap extends Component {
     // local storage here, will hold the travel path of the player
-    state = { travel: 0 };
+    // updating state for more accurate tracking
+    state = {
+        coords: { x: 50, y: 60 },
+        error: '',
+        exits: [],
+        generating: false,
+        graph: {},
+        message: '',
+        path: [],
+        progress: 0,
+        room_id: 0
+    };
 
     findLocation = async() => {
         try {
