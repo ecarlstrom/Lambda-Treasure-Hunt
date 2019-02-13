@@ -84,7 +84,30 @@ class GraphMap extends Component {
         })
     }
 
+    roomTravel = async move => {
+        try {
+            const res = await axios({
+                method: 'post',
+                url: 'https://lambda-treasure-hunt.herokuapp.com/api/adv/move',
+                headers: {
+                    Authorization: `Token ${treasure_token}`
+                },
+                data: {
+                    direction: move
+                }
+            });
+            this.setState({
+                room_id: res.data.room_id,
+                // add method to parse coordinates here to normalize input
+                exits: [...res.data.exits]
+            });
+            console.log(res.data);
+        } catch(error) {
+            console.error('Sorry, an error was encountered.')
+        }
+    };
 
+    
     render() {
         const { travel } = this.state;
         return (
