@@ -99,6 +99,7 @@ class GraphMap extends Component {
             this.setState({
                 room_id: res.data.room_id,
                 // add method to parse coordinates here to normalize input
+                // parsing coming shortly
                 exits: [...res.data.exits]
             });
             console.log(res.data);
@@ -107,7 +108,7 @@ class GraphMap extends Component {
         }
     };
 
-    
+
     render() {
         const { travel } = this.state;
         return (
