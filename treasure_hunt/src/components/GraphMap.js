@@ -14,16 +14,29 @@ class GraphMap extends Component {
         exits: [],
         generating: false,
         graph: {},
+        graphExists: false,
         message: '',
         path: [],
         progress: 0,
-        room_id: 0
+        room_id: 0,
+        totalCoords: [],
+        totalEdges: []
     };
 
     // adding componentDidMount to handle initialization, will find stored current location
     componentDidMount() {
-        this.findLocation();
+        if(localStorage.hasOwnProperty('graph')) {
+            let value = JSON.parse(localStorage.getItem('graph'));
+            this.setState({ graph: value, graphExists: true });
+        } else {
+            localStorage.setItem('graph', JSON.stringify(data)); // map data goes here
+            let value = JSON.parse(localStorage.getItem('graph'));
+            this.setState({ graph: value, graphExists: true });
+        }
+        this.init();
     }
+
+    // placeholder for a componentDidUpdate()
 
     // init() will handle everything that needs to come in componentDidMount() -- initialization and waiting
 
@@ -146,6 +159,31 @@ class GraphMap extends Component {
         }
     };
 
+    ////////// MAP RENDERING FUNCTIONS //////////
+
+    mapVertices = () => {
+        const { graph, room_id } = this.state
+        const setCoords = [];
+        for(let room in graph) {
+            let data = graph[room][0];
+            if(room != room_id) {
+                data.color = '#778181'; // grey
+            }
+            setCoords.push(data);
+        }
+        this.setState({ totalCoords: setCoords });
+    }; //mapVertices()
+
+    mapEdges = () => {
+        const { graph } = this.state;
+        const setEdges = [];
+        for(let room in graph) {
+            for(let roomWithLink in graph[room][1]) {
+                setEdges.push([graph[room][0], graph[graph[room][1][roomWithLink]][0]]);
+            }
+        }
+        this.setState({ totalEdges: setEdges });
+    }; // mapEdges()
 
     render() {
         const { travel } = this.state;
@@ -157,6 +195,6 @@ class GraphMap extends Component {
             </div> // may add a progress bar as well to track map generation
         );
     }
-};
+}; // GraphMap
 
 export default GraphMap;

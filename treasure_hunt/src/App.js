@@ -9,12 +9,7 @@ class App extends Component {
   render() {
     return (
       <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>
-            Test page, will add routes shortly
-          </p>
-        </header>
+        <Route exact path = '/' component = {GraphMap} />
       </div>
     );
   }
