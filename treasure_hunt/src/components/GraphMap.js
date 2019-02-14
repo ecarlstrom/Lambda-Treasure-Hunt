@@ -8,6 +8,7 @@ class GraphMap extends Component {
     // local storage here, will hold the travel path of the player
     // updating state for more accurate tracking
     state = {
+        cooldown: 3,
         coords: { x: 50, y: 60 },
         error: '',
         exits: [],
@@ -23,6 +24,43 @@ class GraphMap extends Component {
     componentDidMount() {
         this.findLocation();
     }
+
+    // init() will handle everything that needs to come in componentDidMount() -- initialization and waiting
+
+    init = async () => {
+        await this.findLocation();
+        await this.playerStatus();
+    }
+
+    // playerStatus will return information on a player's status, called in initialization
+    
+    playerStatus = () => {
+        axios({
+            method: 'post',
+            url: 'https://lambda-treasure-hunt.herokuapp.com/api/adv/status',
+            headers: {
+                Authorization: `Token ${treasure_token}`
+            }
+        })
+            .then(res => {
+                console.log(res.data);
+
+                this.setState(prevState => ({
+                    name: res.data.name,
+                    cooldown: res.data.cooldown,
+                    encumbrance: res.data.encumbrance,
+                    strength: res.data.strength,
+                    speed: res.data.speed,
+                    gold: res.data.gold,
+                    inventory: [...res.data.inventory],
+                    status: [...res.data.status],
+                    errors: [...res.data.errors]
+                }));
+            })
+            .catch(err => {
+                console.error('Sorry, an error was encountered.');
+            });
+    }; // playerStatus()
 
     // findLocation locates a player's current room on the map
     findLocation = async() => {
