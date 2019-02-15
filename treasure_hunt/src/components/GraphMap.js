@@ -30,11 +30,12 @@ class GraphMap extends Component {
         if(localStorage.hasOwnProperty('graph')) {
             let value = JSON.parse(localStorage.getItem('graph'));
             this.setState({ graph: value, graphExists: true });
-        } else {
-            localStorage.setItem('graph', JSON.stringify(data)); // map data goes here
-            let value = JSON.parse(localStorage.getItem('graph'));
-            this.setState({ graph: value, graphExists: true });
-        }
+        } 
+        //else {
+        //     localStorage.setItem('graph', JSON.stringify(data)); // map data goes here
+        //     let value = JSON.parse(localStorage.getItem('graph'));
+        //     this.setState({ graph: value, graphExists: true });
+        // }
         this.init();
     }
 
@@ -336,7 +337,14 @@ class GraphMap extends Component {
     }; // graphRender()
 
     render() {
-        const { travel } = this.state;
+        const { 
+            coords,
+            graph,
+            loaded,
+            message,
+            progress,
+            room_id
+        } = this.state;
         return (
             <div className = 'placeholder-div'>
                 <button className = 'button' onClick = {this.handleClick}>
