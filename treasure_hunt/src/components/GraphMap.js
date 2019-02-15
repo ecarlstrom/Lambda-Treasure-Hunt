@@ -4,7 +4,12 @@ import axios from 'axios';
 import MapVisual from './MapVisual';
 
 require('dotenv').config();
+const rootPath = 'https://lambda-treasure-hunt.herokuapp.com/api/adv';
 const treasure_token = process.env.TREASURE_HUNT_TOKEN;
+const headers = {
+    'Content-Type': 'application/json',
+    'Authorization': `Token ${treasure_token}`
+}
 
 class GraphMap extends Component {
     // local storage here, will hold the travel path of the player
@@ -33,7 +38,7 @@ class GraphMap extends Component {
             let value = JSON.parse(localStorage.getItem('graph'));
             this.setState({ graph: value, graphExists: true });
         } 
-        //else {
+        // else {
         //     localStorage.setItem('graph', JSON.stringify(data)); // map data goes here
         //     let value = JSON.parse(localStorage.getItem('graph'));
         //     this.setState({ graph: value, graphExists: true });
@@ -62,10 +67,7 @@ class GraphMap extends Component {
     playerStatus = () => {
         axios({
             method: 'post',
-            url: 'https://lambda-treasure-hunt.herokuapp.com/api/adv/status',
-            headers: {
-                Authorization: `Token ${treasure_token}`
-            }
+            url: (`${rootPath}/status`, {headers: headers})
         })
             .then(res => {
                 console.log(res.data);
@@ -92,10 +94,7 @@ class GraphMap extends Component {
         try {
             const res = await axios({
                 method: 'get',
-                url: 'https://lambda-treasure-hunt.herokuapp.com/api/adv/init',
-                headers: {
-                    Authorization: `Token ${treasure_token}` // link token here when .env setup is done
-                }
+                url: (`${rootPath}/init`, {headers: headers})
             });
             console.log(res.data);
         } catch(err) {
@@ -160,10 +159,7 @@ class GraphMap extends Component {
         try {
             const res = await axios({
                 method: 'post',
-                url: 'https://lambda-treasure-hunt.herokuapp.com/api/adv/move',
-                headers: {
-                    Authorization: `Token ${treasure_token}`
-                },
+                url: (`${rootPath}/move`, {headers: headers}),
                 data
             });
             let previous = this.state.room_id;
@@ -288,7 +284,7 @@ class GraphMap extends Component {
         const setCoords = [];
         for(let room in graph) {
             let data = graph[room][0];
-            if(room != room_id) {
+            if(room !== room_id) {
                 data.color = '#778181'; // grey
             }
             setCoords.push(data);
@@ -366,11 +362,11 @@ class GraphMap extends Component {
             room_id
         } = this.state;
         return (
-            <div className = 'placeholder-div'>
-                <button className = 'button' onClick = {this.handleClick}>
-                Create Map
-                </button>
-            </div> // may add a progress bar as well to track map generation
+            <MapVisual coords = {this.state.totalCoords} 
+                 graph = {graph}
+                 edges = {this.state.totalEdges}
+                 specificRoom = {this.specificRoom}
+            /> // may add a progress bar as well to track map generation
         );
     }
 }; // GraphMap
