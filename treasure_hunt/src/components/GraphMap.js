@@ -90,17 +90,32 @@ class GraphMap extends Component {
     }; // playerStatus()
 
     // findLocation locates a player's current room on the map
-    findLocation = async() => {
-        try {
-            const res = await axios({
-                method: 'get',
-                url: (`${rootPath}/init`, {headers: headers})
+    findLocation = () => {
+        axios({
+            method: 'get',
+            url: ('`${rootPath}/init`', {headers: headers})
+        })
+            .then(res => {
+                console.log(res.data); // troublshooting
+                let graph = this.graphRender(
+                    res.data.room_id,
+                    this.formatCoordinates(res.data.coordinates),
+                    res.data.exits
+                );
+                this.setState(prevState => ({
+                    room_id: res.data.room_id,
+                    coords: this.formatCoordinates(res.data.coordinates),
+                    cooldown: res.status.cooldown,
+                    exits: [...res.data.exits],
+                    graph
+                    // another placeholder for more attributes if necessary
+                }));
+                this.createVisitedPath();
+            })
+            .catch(err => {
+                console.error('Sorry, an initialization error was encountered.');
             });
-            console.log(res.data);
-        } catch(err) {
-            console.error('An error was encountered. Please try again.');
-        }
-    } // findLocation()
+    }; // findLocation()
 
     handleClick = () => {
         this.findLocation();
