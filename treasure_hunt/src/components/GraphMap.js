@@ -20,7 +20,8 @@ class GraphMap extends Component {
         progress: 0,
         room_id: 0,
         totalCoords: [],
-        totalEdges: []
+        totalEdges: [],
+        visited: new Set()
     };
 
     // adding componentDidMount to handle initialization, will find stored current location
@@ -95,45 +96,42 @@ class GraphMap extends Component {
         this.findLocation();
     };
 
+    ////////// MOVEMENT AND TRAVERSAL FUNCTIONS //////////
+
     // mapTravel will allow the player to move across the map via a traversal algorithm
     mapTravel = () => {
-        let { coords, exits, graph, path, room_id } = this.state;
-        const inverseDirections = { n: 's', s: 'n', w: 'e', e: 'w' }; // reversing direction for backtracking
-        this.setState({ generating: true }); // path is being generated, so generated is true
+        let count = 1;
+        let unexplored = this.findUnexplored();
+        console.log(`Unexplored rooms: ${unexplored}`);
 
-        const traversal = {};
-        const traversalPath = [];
-
-        // initialiazing the first room, if there is no current room_id it is set when initialized
-        if (!graph[room_id]) {
-            traversal[room_id] = [];
-            traversal[room_id].push(coords);
-            
-            const travel = {};
-            exits.forEach(exit => {
-                travel[exit] = '?'; // represents unexplored exits
-            });
-            traversal[room_id].push(travel);
-        }
-
-        // main loop logic, goes through the list of room IDs to push them to the proper place
-        const interval = setInterval(() => {
-            const unexplored = []; // array of unexplored rooms
-            const directions = traversal[room_id][1];
-            for (let direction in directions) {
-                if (directions[direction] === '?') {
-                    unexplored.push(direction);
+        if(unexplored.length) {
+            let move = unexplored[0];
+            this.roomTravel(move);
+        } else {
+            let path = this.bfsShortest();
+            if(typeof path === 'string') {
+                console.log(path);
+            } else {
+                for(let direction of path) {
+                    console.log(direction);
+                    for(let d in direction) {
+                        setTimeout(() => {
+                            this.roomTravel(d, direction[d]);
+                        }, this.state.cooldown * 1000 * count);
+                        count++;
+                    }
                 }
             }
-            if (unexplored) {
-                const travel = unexplored[0];
-                traversalPath.push(travel);
-                let previous_room = room_id;
-
-                // need to make a room-to-room movement function here
-            }
-        })
-    }
+        }
+        if(this.state.visited.size < 499) {
+            setTimeout(this.mapTravel, this.state.cooldown * 1000 * count + 1000);
+            this.createVisitedPath();
+            count = 1;
+        } else {
+            console.log('Player has successfully completed a full traversal!');
+            this.setState({ generating: false });
+        }
+    }; // mapTravel()
 
     roomTravel = async move => {
         try {
@@ -158,6 +156,81 @@ class GraphMap extends Component {
             console.error('Sorry, an error was encountered.')
         }
     };
+
+    findUnexplored = () => {
+        // will find unexplored ('?') rooms on the map and push to the 'unexplored' array
+        let unexplored = [];
+        let directions = this.state.graph[this.state.room_id][1];
+        for(let direction in directions) {
+            if(directions[direction] === '?') {
+                unexplored.push(direction);
+            }
+        }
+        return unexplored;
+    } // findUnexplored()
+
+    bfsShortest = (start = this.state.room_id, target = '?') => {
+        // bfs algorithm to find the path from one room to another
+        let { graph } = this.state;
+        let queue = [];
+        let visited = new Set();
+        
+        for(let room in graph[start][1]) {
+            queue = [...queue, [{ [room]: graph[start][1][room] }]];
+        } // initialize the queue based on the starting room
+
+        while(queue.length) {
+            let dequeue = queue.shift();
+            let previous = dequeue[dequeue.length - 1];
+
+            for(let exit in previous) {
+                if(previous[exit] === target) {
+                    if(target === '?') {
+                        dequeue.pop();
+                    } // standard dequeue functionality, pops entries that are unexplored
+                    dequeue.forEach(item => {
+                        for(let key in item) {
+                            graph[item[key]][0].color = 'bd1f27'; // red
+                        }
+                    }); // colors items that have been dequeued
+                    return dequeue;
+                } else {
+                    visited.add(previous[exit]);
+
+                    for(let path in graph[previous[exit]][1]) {
+                        if(visited.has(graph[previous[exit]][1][path]) === false) {
+                            // creates a copy of the path from the dequeue array
+                            // pushes path with dequeued items to this new array
+                            let newPath = Array.from(dequeue);
+                            newPath.push({ [path]: graph[previous[exit]][1][path] });
+                            queue.push(newPath);
+                        }
+                    }
+                }
+            }
+        }
+        return('Please proivde a valid target room!'); // error handling for invalid targets
+    } // bfsShortest()
+
+    createVisitedPath = () => {
+        // creates a path of visited rooms by checking for visited status and pushing to new array
+        let visited = new Set(this.state.set);
+        for(let key in this.state.graph) {
+            if(!visited.has(key)) {
+                let blank = [];
+                for(let direction in key) {
+                    if(key[direction] === '?') {
+                        blank.push(direction);
+                    }
+                }
+                if(blank.length) {
+                    visited.add(key);
+                }
+            }
+        }
+        let visitedPath = Math.round((visited.size / 500) * 100);
+        this.setState({ visited: visitedPath });
+    } // createVisitedPath()
 
     ////////// MAP RENDERING FUNCTIONS //////////
 
