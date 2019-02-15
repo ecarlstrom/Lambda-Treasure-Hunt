@@ -38,11 +38,11 @@ class GraphMap extends Component {
             let value = JSON.parse(localStorage.getItem('graph'));
             this.setState({ graph: value, graphExists: true });
         } 
-        // else {
-        //     localStorage.setItem('graph', JSON.stringify(data)); // map data goes here
-        //     let value = JSON.parse(localStorage.getItem('graph'));
-        //     this.setState({ graph: value, graphExists: true });
-        // }
+        else {
+            localStorage.setItem('graph', JSON.stringify(data)); // map data goes here
+            let value = JSON.parse(localStorage.getItem('graph'));
+            this.setState({ graph: value, graphExists: true });
+        }
         this.init();
     }
 
@@ -59,6 +59,7 @@ class GraphMap extends Component {
 
     init = async () => {
         await this.findLocation();
+        await this.addPromise(1000 * this.state.cooldown);
         await this.playerStatus();
     }
 
@@ -96,7 +97,7 @@ class GraphMap extends Component {
             url: ('`${rootPath}/init`', {headers: headers})
         })
             .then(res => {
-                console.log(res.data); // troublshooting
+                console.log(res.data); // troubleshooting
                 let graph = this.graphRender(
                     res.data.room_id,
                     this.formatCoordinates(res.data.coordinates),
@@ -265,13 +266,13 @@ class GraphMap extends Component {
                         blank.push(direction);
                     }
                 }
-                if(blank.length) {
+                if(!blank.length) {
                     visited.add(key);
                 }
             }
         }
         let visitedPath = Math.round((visited.size / 500) * 100);
-        this.setState({ visited: visitedPath });
+        this.setState({ visited, visitedPath });
     } // createVisitedPath()
 
     specificRoom = async room => {
@@ -285,12 +286,19 @@ class GraphMap extends Component {
         } else {
             for(let direction of path) {
                 for(let dir in direction) {
-                    await(1000 * this.state.cooldown);
+                    await this.addPromise(1000 * this.state.cooldown);
                     // might need another function here
                 }
             }
         }
     }; // specificRoom()
+
+    addPromise = async ms => {
+        // this should turn setTimeout into an async function and hopefully resolve promise errors
+        return new Promise(resolve => {
+            setTimeout(resolve, ms);
+        });
+    } // addPromise()
 
     ////////// MAP RENDERING FUNCTIONS //////////
 
