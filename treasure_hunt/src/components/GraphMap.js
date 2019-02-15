@@ -15,6 +15,7 @@ class GraphMap extends Component {
         generating: false,
         graph: {},
         graphExists: false,
+        loaded: false,
         message: '',
         path: [],
         progress: 0,
@@ -37,7 +38,14 @@ class GraphMap extends Component {
         this.init();
     }
 
-    // placeholder for a componentDidUpdate()
+    componentDidUpdate(prevState) {
+        if(!this.state.totalCoords.length && this.state.graph) {
+            this.mapEdges();
+            this.mapVertices();
+            
+            setTimeout(() => this.setState({ loaded: true }), 3000);
+        }
+    }
 
     // init() will handle everything that needs to come in componentDidMount() -- initialization and waiting
 
