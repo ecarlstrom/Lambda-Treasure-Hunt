@@ -258,6 +258,17 @@ class GraphMap extends Component {
         this.setState({ totalEdges: setEdges });
     }; // mapEdges()
 
+    formatCoordinates = coords => {
+        const rawCoords = {};
+        const formatted = coords.replace(/[{()}]/g, '').split(',');
+
+        formatted.forEach(coord => {
+            formatted['x'] = parseInt(formatted[0]);
+            formatted['y'] = parseInt(formatted[1]);
+        });
+        return formatted;
+    }; // formatCoordinates()
+
     render() {
         const { travel } = this.state;
         return (
