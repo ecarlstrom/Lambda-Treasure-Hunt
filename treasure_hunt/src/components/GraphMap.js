@@ -133,7 +133,19 @@ class GraphMap extends Component {
         }
     }; // mapTravel()
 
-    roomTravel = async move => {
+    roomTravel = async (move, next_room = null) => {
+        // handles room to room movement
+        let data;
+        if(next_room !== null) {
+            data = {
+                direction: move,
+                next_room: next_room.toString()
+            };
+        } else {
+            data = {
+                direction: move
+            };
+        }
         try {
             const res = await axios({
                 method: 'post',
@@ -141,21 +153,29 @@ class GraphMap extends Component {
                 headers: {
                     Authorization: `Token ${treasure_token}`
                 },
-                data: {
-                    direction: move
-                }
+                data
             });
+            let previous = this.state.room_id;
+            let graph = this.graphRender(
+                res.data.room_id,
+                this.formatCoordinates(res.data.coordinates),
+                res.data.exits,
+                previous,
+                move
+            );
             this.setState({
                 room_id: res.data.room_id,
-                // add method to parse coordinates here to normalize input
-                // parsing coming shortly
-                exits: [...res.data.exits]
+                coords: this.formatCoordinates(res.data.coordinates),
+                exits: [...res.data.exits],
+                cooldown: res.data.cooldown,
+                graph
+                // other attributes as necessary
             });
             console.log(res.data);
         } catch(error) {
-            console.error('Sorry, an error was encountered.')
+            console.error('Sorry, an error was encountered while traveling.')
         }
-    };
+    }; // roomTravel()
 
     findUnexplored = () => {
         // will find unexplored ('?') rooms on the map and push to the 'unexplored' array
@@ -268,6 +288,44 @@ class GraphMap extends Component {
         });
         return formatted;
     }; // formatCoordinates()
+
+    graphRender = (id, coords, exits, previous = null, move = null) => {
+        // this function handles all new graph rendering during exploration
+        // will also handle colors for updating and explored (non-red) rooms
+        const { reversed } = this.state;
+        let graph = Object.assign({}, this.state.graph);
+        
+        //rendering exits for currently unexplored ('?') rooms
+        if(!this.state.graph[id]) {
+            let payload = [];
+            payload.push(coords);
+            const traveled = {};
+            exits.forEach(exit => {
+                traveled[exit] = '?';
+            });
+            payload.push(traveled);
+            graph = { ...graph, [id]: payload };
+        }
+
+        // checks if the user has moved from an unexplored room while making a valid move
+        // previous value is stored and can also be used for backtracking if necessary
+        if(previous !== null && move && previous !== id && graph[previous][1][move] === '?') {
+            graph[previous][1][move] = id;
+            graph[id][1][reversed[move]] = previous;
+        }
+
+        // assigns colors based on room status
+        if(previous !== null) {
+            graph[previous][0].color = '#778181'; // grey
+            graph[id][0].color = '#4694b7'; // blue
+        } else {
+            graph[0][0].color = '#778181';
+            graph[id][0].color = '#4694b7';
+        }
+        
+        localStorage.setItem('graph', JSON.stringify(graph));
+        return graph;
+    }; // graphRender()
 
     render() {
         const { travel } = this.state;
