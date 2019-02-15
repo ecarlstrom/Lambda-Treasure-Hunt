@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import axios from 'axios';
 
+import MapVisual from './MapVisual';
+
 require('dotenv').config();
 const treasure_token = process.env.TREASURE_HUNT_TOKEN;
 
@@ -260,6 +262,24 @@ class GraphMap extends Component {
         let visitedPath = Math.round((visited.size / 500) * 100);
         this.setState({ visited: visitedPath });
     } // createVisitedPath()
+
+    specificRoom = async room => {
+        // allows the user to click on a particular room to travel to that location
+        const path = this.bfsShortest(this.state.room_id, room);
+        console.log(path);
+        console.log(room);
+
+        if(typeof path === 'string') {
+            console.log(path);
+        } else {
+            for(let direction of path) {
+                for(let dir in direction) {
+                    await(1000 * this.state.cooldown);
+                    // might need another function here
+                }
+            }
+        }
+    }; // specificRoom()
 
     ////////// MAP RENDERING FUNCTIONS //////////
 
