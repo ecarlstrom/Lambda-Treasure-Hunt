@@ -1,18 +1,22 @@
 import React, { Component } from 'react';
 import axios from 'axios';
 
-import MapVisual from './MapVisual';
+// import MapVisual from './MapVisual';
 
 require('dotenv').config();
 const rootPath = 'https://lambda-treasure-hunt.herokuapp.com/api/adv/init';
-const movePath = 'https://lambda-treasure-hunt.herokuapp.com/api/adv/move/';
+const movePath = "https://lambda-treasure-hunt.herokuapp.com/api/adv/move/";
 const treasure_token = process.env.REACT_APP_TREASURE_HUNT_TOKEN;
 console.log(treasure_token);
 console.log(process.env);
+// const headers = {
+//     // 'Content-Type': 'application/json',
+//     'Authorization': `Token ${treasure_token}`,
+//     // 'Access-Control-Allow-Origin': 'http://localhost:3000'
+// }
+/*Not sure but maybe the comments in the object caused a problem */
 const headers = {
-    // 'Content-Type': 'application/json',
-    'Authorization': `Token ${treasure_token}`,
-    'Access-Control-Allow-Origin': 'http://localhost:3000'
+  Authorization : `Token ${treasure_token}`
 }
 
 class GraphMap extends Component {
@@ -39,85 +43,25 @@ class GraphMap extends Component {
 
     // adding componentDidMount to handle initialization, will find stored current location
     componentDidMount() {
-        // if(localStorage.hasOwnProperty('graph')) {
-        //     let value = JSON.parse(localStorage.getItem('graph'));
-        //     console.log(value);
-        //     this.setState({ graph: value, graphExists: true });
-        // } 
-        // else {
-           
-        // }
-        console.log('Finding location');
+        console.log('Initializing');
         this.findLocation();
-        // this.init();
     }
 
-    componentDidUpdate(prevState) {
-        if(!this.state.totalCoords.length && this.state.graph) {
-            // this.mapEdges();
-            // this.mapVertices(); 
-            // setTimeout(() => this.setState({ loaded: true }), 3000);
-            console.log('Updated.');
-        }
-    }
 
-    // init() will handle everything that needs to come in componentDidMount() -- initialization and waiting
-    // async init() {
-        
-    //     await this.addPromise(1000 * this.state.cooldown);
-    //     // await this.playerStatus();
-    // }
-
-    // playerStatus will return information on a player's status, called in initialization
     
-    // playerStatus = () => {
-    //     // axios({
-    //     //     method: 'post',
-    //     //     url: (`${rootPath}/status`, {headers: headers})
-    //     // })
-    //     let requestOptions = { headers: headers };
-    //     console.log(requestOptions);
-    //     axios.get(rootPath, requestOptions)
-    //         .then(res => {
-    //             console.log(res.data);
-
-    //             this.setState(prevState => ({
-    //                 name: res.data.name,
-    //                 cooldown: res.data.cooldown,
-    //                 encumbrance: res.data.encumbrance,
-    //                 strength: res.data.strength,
-    //                 speed: res.data.speed,
-    //                 gold: res.data.gold,
-    //                 inventory: [...res.data.inventory],
-    //                 status: [...res.data.status],
-    //                 errors: [...res.data.errors]
-    //             }));
-    //         })
-    //         .catch(err => {
-    //             console.error('Sorry, an error was encountered.');
-    //             console.log(err.response);
-    //         });
-    // }; // playerStatus()
-
-    // findLocation locates a player's current room on the map
     findLocation = () => {
-        // axios({
-        //     method: 'get',
-        //     url: (`${rootPath}/init`, {headers: headers})
-        // })
         console.log('findLocation() test');
         console.log('graph empty');
         let requestOptions = { headers };
         const promise = axios.get(rootPath, requestOptions);
         promise
             .then(res => {
-                console.log(res.data); // troubleshooting
-                let newVar = this.formatCoordinates(res.data.coordinates);
-                // let graph = this.graphRender(
-                //     res.data.room_id,
-                //     newVar,
-                //     res.data.exits
-                // );
+                console.log(res); // troubleshooting
+                console.log(res.data)
+                /*this line of code will take the string and make them individual numbers.  */
+                // let newVar = this.formatCoordinates(res.data.coordinates); <<<< no longer returning anything handling setState from there. 
+                this.formatCoordinates(res.data.coordinates, res.data.room_id)
+                /*Make a copy of the graph on state */
                 const graph = Object.assign({}, this.state.graph);
                 console.log(graph);
                 const exits = res.data.exits;
@@ -139,25 +83,22 @@ class GraphMap extends Component {
                 }
                 this.setState({
                     room_id: room,
-                    coords: newVar,
-                    cooldown: res.status.cooldown,
+                    cooldown: res.data.cooldown,
                     exits: res.data.exits,
                     graph
                     // another placeholder for more attributes if necessary
                 });
                 console.log(graph);
-                this.createVisitedPath();
+                /* What does this do?  */
+                // this.createVisitedPath(); 
+                
             })
             .catch(err => {
-                console.error('Sorry, an initialization error was encountered.');
                 console.log(err.response);
+                console.log('Sorry, an initialization error was encountered.');
+                
             });
-    }; // findLocation()
-
-    // handleClick = () => {
-    //     this.findLocation();
-    // };
-
+    }; 
     ////////// MOVEMENT AND TRAVERSAL FUNCTIONS //////////
 
     // mapTravel will allow the player to move across the map via a traversal algorithm
@@ -193,31 +134,31 @@ class GraphMap extends Component {
         }
 }; // mapTravel()
 
-    roomTravel = async (move, next_room = null) => {
+    // roomTravel = (move, next_room = null) => {
+      roomTravel = (move) => {
         // handles room to room movement
         console.log(move);
         if(!move) {
             console.log('Problem with move.');
             return;
         }
-        let data;
-        if(next_room !== null) {
-            data = {
-                direction: move,
-                next_room: next_room.toString()
-            };
-        } else {
-            data = {
-                direction: move
-            };
-        }
-        // try {
-            // const res = await axios({
-            //     method: 'post',
-            //     url: (`${rootPath}/move`, {headers: headers}),
-            //     data
+        // let data;
+        // if(next_room !== null) {
+        //     data = {
+        //         direction: move,
+        //         next_room: next_room.toString()
+        //     };
+        // } else {
+        //     data = {
+        //         direction: move
+        //     };
+        // }    next_room will never be needed and never should be passed in.   
+
+        const body = { direction : move}
             let requestOptions = { headers: headers };
-            axios.post(movePath, requestOptions)
+            // axios.post(movePath, requestOptions)     We need to have the  direction passed in  
+            const promise = axios.post(movePath, body, requestOptions);
+            promise
                 .then(res => {
                     const graph = Object.assign({}, this.state.graph);
                     console.log(graph);
@@ -225,6 +166,9 @@ class GraphMap extends Component {
                     console.log(exits);
                     const room = res.data.room_id;
                     let opposite = this.state.opposites[move];
+                    /*best practice is not to call functions inside of your this.setState call.  */
+                    // const coords =  this.formatCoordinates(res.data.coordinates);  <<<<< no longer returning anything handling the setState from there
+                    this.formatCoordinates(res.data.coordinates, res.data.room_id)
                     if(!(room in graph)) {
                         const options = ['n', 's', 'e', 'w'];
                         const temp = {};
@@ -242,17 +186,15 @@ class GraphMap extends Component {
                     // handles '?' rooms in both directions based on what is currently known
                     graph[room][opposite] = this.state.room_id;
                     graph[this.state.room_id][move] = room;
-                    // let graph = this.graphRender(
-                    //     res.data.room_id,
-                    //     this.formatCoordinates(res.data.coordinates),
-                    //     res.data.exits,
-                    //     previous,
-                    //     move
-                    // );
+
+                    /* Handle local storage */
+                    localStorage.setItem('savedGraph', JSON.stringify(graph))
+                    
+                    /*Incase there is an issue we will have the rooms saved */
+                    
                     this.setState({
                         room_id: res.data.room_id,
-                        coords: this.formatCoordinates(res.data.coordinates),
-                        exits: [...res.data.exits],
+                        exits: res.data.exits,
                         cooldown: res.data.cooldown,
                         graph
                         // other attributes as necessary
@@ -263,9 +205,10 @@ class GraphMap extends Component {
                     }
                 })
                 .catch(error => {
-                    console.error('Sorry, an error was encountered while traveling.')
                     console.log(error.response);
-                    this.setState({ cooldown: error.response.data.cooldown });
+                    console.log('Sorry, an error was encountered while traveling.')
+                    
+                    // this.setState({ cooldown: error.response.data.cooldown });
                     if(Object.keys(this.state.graph).length < 500) {
                         setTimeout(this.mapTravel, this.state.cooldown * 1000);
                     }
@@ -275,14 +218,21 @@ class GraphMap extends Component {
     findUnexplored = () => {
         // will find unexplored ('?') rooms on the map and push to the 'unexplored' array
         let unexplored = [];
-        let directions = this.state.graph[this.state.room_id];
-        for(let direction in directions) {
-            if(directions[direction] === '?') {
-                unexplored.push(direction);
-                break
-            }
-        }
-        console.log(unexplored);
+        console.log(this.state.graph)
+        console.log(this.state.room_id)
+        const graph = Object.assign({}, this.state.graph)
+        const room = String(this.state.room_id)
+        
+        // let directions = graph[room]    weird error  Uncaught Type error : dirctions[Symbol.iterator] is not a function so work around 
+        console.log(`Available directions for ${room} =`)
+        console.log(graph[room])
+        for(let direction in graph[room]){
+          if(graph[room][direction] === '?') {
+              unexplored.push(direction);
+              break
+          }
+      }
+        console.log(`The chosen path from findUnexplored = ${unexplored}`);
         return unexplored;
     } // findUnexplored()
 
@@ -306,7 +256,7 @@ class GraphMap extends Component {
     } // pathConversion()
 
 
-    bfsShortest = (start = this.state.room_id, target = '?') => {
+    bfsShortest = (start = this.state.room_id) => {
         // bfs algorithm to find the path from one room to another
         let { graph } = this.state;
         let queue = [];
@@ -322,13 +272,9 @@ class GraphMap extends Component {
                     for(let exit in graph[previous]) {
                         if(graph[previous][exit] === '?') {
                             // converts numbers to directions
+                            console.log(`converting the path in bfsShortest ${dequeue}`)
                             return this.pathConversion(dequeue);
-                            // standard dequeue functionality, pops entries that are unexplored
-                            // dequeue.forEach(item => {
-                            //     // for(let key in item) {
-                            //     //     graph[item[key]][0].color = 'bd1f27'; // red
-                            //     // }
-                            // }); // colors items that have been dequeued
+                            
                         } else {
                             
                             let newPath = dequeue.slice();
@@ -344,7 +290,8 @@ class GraphMap extends Component {
 
     createVisitedPath = () => {
         // creates a path of visited rooms by checking for visited status and pushing to new array
-        let visited = new Set(this.state.set);
+        // let visited = new Set(this.state.set);   there is no this.state.set  
+        const visited = new Set(this.state.visited)  /*Fix but not sure why we are using a set*/
         for(let key in this.state.graph) {
             if(!visited.has(key)) {
                 let blank = [];
@@ -358,132 +305,42 @@ class GraphMap extends Component {
                 }
             }
         }
+
+        /* What purpose does this serve?  */
         let visitedPath = Math.round((visited.size / 500) * 100);
         this.setState({ visited, visitedPath });
     } // createVisitedPath()
 
-    // specificRoom = async room => {
-    //     // allows the user to click on a particular room to travel to that location
-    //     const path = this.bfsShortest(this.state.room_id, room);
-    //     console.log(path);
-    //     console.log(room);
 
-    //     if(typeof path === 'string') {
-    //         console.log(path);
-    //     } else {
-    //         for(let direction of path) {
-    //             for(let dir in direction) {
-    //                 await this.addPromise(1000 * this.state.cooldown);
-    //                 // might need another function here
-    //             }
-    //         }
-    //     }
-    // }; // specificRoom()
 
-    addPromise = ms => {
-        // this should turn setTimeout into an async function and hopefully resolve promise errors
-        return new Promise(resolve => {
-            setTimeout(resolve, ms);
-        });
-    } // addPromise()
 
-    ////////// MAP RENDERING FUNCTIONS //////////
-
-    // mapVertices = () => {
-    //     const { graph, room_id } = this.state
-    //     const setCoords = [];
-    //     for(let room in graph) {
-    //         let data = graph[room][0];
-    //         if(room !== room_id) {
-    //             data.color = '#778181'; // grey
-    //         }
-    //         setCoords.push(data);
-    //     }
-    //     this.setState({ totalCoords: setCoords });
-    // }; //mapVertices()
-
-    // mapEdges = () => {
-    //     const { graph } = this.state;
-    //     const setEdges = [];
-    //     if(Object.keys(graph).length > 0) {
-    //     for(let room in graph) {
-    //         for(let roomWithLink in graph[room][1]) {
-    //             setEdges.push([graph[room][0], graph[graph[room][1][roomWithLink]][0]]);
-    //         }
-    //     }
-    //     this.setState({ totalEdges: setEdges });
-    //     }
-        
-    // }; // mapEdges()
-
-    formatCoordinates = coords => {
+    formatCoordinates = (coor, room) => {
         console.log('first coordinates test');
-        console.log(coords);
-        const rawCoords = {};
-        const first = Number(coords.slice(1, 3));
-        const second = Number(coords.slice(4, 6));
+        console.log(coor);
+        const coords = Object.assign({}, this.state.coords);
+        const rawCoords = {}
+        const first = Number(coor.slice(1, 3));
+        const second = Number(coor.slice(4, 6));
         console.log('second coordinates test');
         
         rawCoords['x'] = first;
         rawCoords['y'] = second;
-
-        this.setState({ coords: rawCoords })
-        console.log('coordinates test');
+        /*now coords will have each roomKey and  the associated x and y as an object */
+        coords[room] = rawCoords; 
+        console.log(`This is what coords look like ${coords[room]}`)
+        this.setState({ coords: coords })
+        localStorage.setItem('coords', JSON.stringify(coords))
     }; // formatCoordinates()
 
-    // graphRender = (id, coords, exits, previous = null, move = null) => {
-    //     // this function handles all new graph rendering during exploration
-    //     // will also handle colors for updating and explored (non-red) rooms
-    //     const { reversed } = this.state;
-    //     let graph = Object.assign({}, this.state.graph);
-        
-    //     //rendering exits for currently unexplored ('?') rooms
-    //     if(!this.state.graph[id]) {
-    //         let payload = [];
-    //         payload.push(coords);
-    //         const traveled = {};
-    //         exits.forEach(exit => {
-    //             traveled[exit] = '?';
-    //         });
-    //         payload.push(traveled);
-    //         graph = { ...graph, [id]: payload };
-    //     }
-
-    //     // checks if the user has moved from an unexplored room while making a valid move
-    //     // previous value is stored and can also be used for backtracking if necessary
-    //     if(previous !== null && move && previous !== id && graph[previous][1][move] === '?') {
-    //         graph[previous][1][move] = id;
-    //         graph[id][1][reversed[move]] = previous;
-    //     }
-
-    //     // assigns colors based on room status
-    //     if(previous !== null) {
-    //         graph[previous][0].color = '#778181'; // grey
-    //         graph[id][0].color = '#4694b7'; // blue
-    //     } else {
-    //         graph[0][0].color = '#778181';
-    //         graph[id][0].color = '#4694b7';
-    //     }
-        
-    //     localStorage.setItem('graph', JSON.stringify(graph));
-    //     return graph;
-    // }; // graphRender()
+    
 
     render() {
-        const { 
-            coords,
-            graph,
-            loaded,
-            message,
-            progress,
-            room_id
-        } = this.state;
+      const graph = JSON.parse(localStorage.getItem('savedGraph'))
+      // const coords = JSON.parse(localStorage.getItem('coords'))
+      // console.log(graph) 
+    //   const count = Object.keys(graph).length  
+    //   console.log(`Total rooms found: ${count}`)
         return (
-            // <MapVisual coords = {this.state.totalCoords} 
-            //      graph = {graph}
-            //      edges = {this.state.totalEdges}
-            //      specificRoom = {this.specificRoom}
-            // /> // may add a progress bar as well to track map generation
             <div className = 'test'>
                 <button onClick = {this.mapTravel}>Create Map</button>
             </div>
